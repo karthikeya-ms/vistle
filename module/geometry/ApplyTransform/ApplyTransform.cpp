@@ -72,10 +72,8 @@ bool ApplyTransform::compute()
 
     Object::ptr out;
     if (auto resultEntry = m_resultCache.getOrLock(o->getName(), out)) {
-
         Object::ptr outGrid;
         if (auto gridEntry = m_gridCache.getOrLock(coords->getName(), outGrid)) {
-
             auto T = coords->getTransform();
 
             if (T.isIdentity()) {
@@ -84,7 +82,6 @@ bool ApplyTransform::compute()
                 updateMeta(clone);
                 outGrid = clone;
             } else {
-
 #ifdef APPLYTRANSFORMVTKM
                 // =====================================================
                 // GPU / Viskores path
@@ -122,7 +119,7 @@ bool ApplyTransform::compute()
             m_gridCache.storeAndUnlock(gridEntry, outGrid);
         }
 
-        // reattach mapped data 
+        // reattach mapped data
         if (split.mapped) {
             auto mapping = split.mapped->guessMapping();
             if (mapping != DataBase::Vertex) {

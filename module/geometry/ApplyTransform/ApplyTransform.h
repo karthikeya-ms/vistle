@@ -13,7 +13,7 @@ public:
 private:
     bool compute() override;
 
-    
+
     vistle::Coords::ptr applyTransformCpu(const vistle::Coords &coords);
 
     vistle::ResultCache<vistle::Object::ptr> m_gridCache, m_resultCache;
