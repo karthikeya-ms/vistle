@@ -1,1 +1,4 @@
 add_module(ApplyTransform "compute transformed coordinates" ApplyTransform.cpp ApplyTransform.h)
+add_vtkm_module(ApplyTransformVtkm "compute transformed coordinates" ApplyTransform.h ApplyTransform.cpp)
+target_compile_definitions(ApplyTransformVtkm PRIVATE ApplyTransform=ApplyTransformVtkm)
+target_compile_definitions(ApplyTransformVtkm PRIVATE APPLYTRANSFORMVTKM)

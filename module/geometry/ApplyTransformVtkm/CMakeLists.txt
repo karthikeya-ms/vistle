@@ -1,1 +1,0 @@
-add_vtkm_module(ApplyTransformVtkm "compute transformed coordinates" ApplyTransformVtkm.h ApplyTransformVtkm.cpp)
