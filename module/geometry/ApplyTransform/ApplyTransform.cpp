@@ -72,10 +72,8 @@ bool ApplyTransform::compute()
 
     Object::ptr out;
     if (auto resultEntry = m_resultCache.getOrLock(o->getName(), out)) {
-
         Object::ptr outGrid;
         if (auto gridEntry = m_gridCache.getOrLock(coords->getName(), outGrid)) {
-
             auto T = coords->getTransform();
 
             if (T.isIdentity()) {
@@ -84,7 +82,6 @@ bool ApplyTransform::compute()
                 updateMeta(clone);
                 outGrid = clone;
             } else {
-
 #ifdef APPLYTRANSFORMVTKM
                 // =====================================================
                 // GPU / Viskores path
@@ -92,7 +89,6 @@ bool ApplyTransform::compute()
                 viskores::cont::DataSet inDs;
                 vistle::vtkmSetGrid(inDs, coords);
 
-                // Set up the point transform filter
                 viskores::filter::field_transform::PointTransform filter;
 
                 // Copy Vistle Matrix4 into Viskores 4x4
@@ -103,13 +99,18 @@ bool ApplyTransform::compute()
                 filter.SetTransform(M);
 
                 // Run on GPU
-                (void)filter.Execute(inDs);
+                auto outDs = filter.Execute(inDs);
 
-                auto clone = coords->clone();
-                clone->setTransform(vistle::Matrix4::Identity());
-                updateMeta(clone);
-                outGrid = clone;
+                // Get transformed geometry back from GPU
+                auto geom = vistle::vtkmGetGeometry(outDs);
+                auto outCoords = vistle::Coords::as(geom);
+
+                // Finalize and output
+                outCoords->setTransform(vistle::Matrix4::Identity());
+                updateMeta(outCoords);
+                outGrid = outCoords;
 #else
+
                 // =====================================================
                 // CPU path
                 // =====================================================
@@ -122,7 +123,7 @@ bool ApplyTransform::compute()
             m_gridCache.storeAndUnlock(gridEntry, outGrid);
         }
 
-        // reattach mapped data 
+        // reattach mapped data
         if (split.mapped) {
             auto mapping = split.mapped->guessMapping();
             if (mapping != DataBase::Vertex) {
