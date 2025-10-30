@@ -4,6 +4,7 @@
 #include <vistle/module/module.h>
 #include <vistle/module/resultcache.h>
 
+
 class ApplyTransform: public vistle::Module {
 public:
     ApplyTransform(const std::string &name, int moduleID, mpi::communicator comm);
@@ -11,6 +12,9 @@ public:
 
 private:
     bool compute() override;
+
+    
+    vistle::Coords::ptr applyTransformCpu(const vistle::Coords &coords);
 
     vistle::ResultCache<vistle::Object::ptr> m_gridCache, m_resultCache;
 };
