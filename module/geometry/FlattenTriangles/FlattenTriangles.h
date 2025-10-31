@@ -6,10 +6,9 @@
 class FlattenTriangles: public vistle::Module {
 public:
     FlattenTriangles(const std::string &name, int moduleID, mpi::communicator comm);
-    ~FlattenTriangles();
 
 private:
-    virtual bool compute();
+    bool compute() override;
 };
 
 #endif

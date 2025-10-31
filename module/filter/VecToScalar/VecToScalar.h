@@ -8,10 +8,9 @@
 class VecToScalar: public vistle::Module {
 public:
     VecToScalar(const std::string &name, int moduleID, mpi::communicator comm);
-    ~VecToScalar();
 
 private:
-    virtual bool compute();
+    bool compute() override;
     vistle::IntParameter *m_caseParam;
     vistle::Vec<vistle::Scalar>::ptr extract(vistle::Vec<vistle::Scalar, 3>::const_ptr &data,
                                              const vistle::Index &coord);

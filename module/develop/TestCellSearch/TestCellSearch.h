@@ -6,10 +6,9 @@
 class TestCellSearch: public vistle::Module {
 public:
     TestCellSearch(const std::string &name, int moduleID, mpi::communicator comm);
-    ~TestCellSearch();
 
 private:
-    virtual bool compute();
+    bool compute() override;
 
     vistle::VectorParameter *m_point;
     vistle::IntParameter *m_block, *m_cell;

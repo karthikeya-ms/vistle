@@ -7,11 +7,10 @@
 class MetaData: public vistle::Module {
 public:
     MetaData(const std::string &name, int moduleID, mpi::communicator comm);
-    ~MetaData();
 
 private:
     std::map<int, vistle::Object::const_ptr> m_objs;
-    virtual bool compute();
+    bool compute() override;
 
     vistle::IntParameter *m_kind;
     vistle::IntParameter *m_modulus;

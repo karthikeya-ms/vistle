@@ -12,7 +12,6 @@ struct VtkFile;
 class Transversalflussmaschine: public vistle::Reader {
 public:
     Transversalflussmaschine(const std::string &name, int moduleID, mpi::communicator comm);
-    ~Transversalflussmaschine() override;
 
 private:
     // Ports
@@ -25,8 +24,8 @@ private:
     std::array<std::unique_ptr<rapidcsv::Document>, 3> m_data;
     std::unique_ptr<rapidcsv::Document> m_connectivity;
     std::string m_species;
-    virtual bool examine(const vistle::Parameter *param = nullptr) override;
-    virtual bool read(Token &token, int timestep = -1, int block = -1) override;
+    bool examine(const vistle::Parameter *param = nullptr) override;
+    bool read(Token &token, int timestep = -1, int block = -1) override;
 };
 
 #endif

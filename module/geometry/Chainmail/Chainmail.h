@@ -13,10 +13,9 @@ Extrapolates rings from quads and triangles of an uniform grid
 class Chainmail: public vistle::Module {
 public:
     Chainmail(const std::string &name, int moduleID, mpi::communicator comm);
-    ~Chainmail();
 
 private:
-    virtual bool compute();
+    bool compute() override;
     std::vector<vistle::Vector3> toTorus(const std::vector<vistle::Vector3> &points, vistle::Index numTorusSegments,
                                          vistle::Index numDiameterSegments);
     std::vector<vistle::Vector3> toTorusCircle(const std::vector<vistle::Vector3> &points,

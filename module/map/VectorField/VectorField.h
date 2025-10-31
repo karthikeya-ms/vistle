@@ -6,10 +6,9 @@
 class VectorField: public vistle::Module {
 public:
     VectorField(const std::string &name, int moduleID, mpi::communicator comm);
-    ~VectorField();
 
 private:
-    virtual bool compute();
+    bool compute() override;
 
     vistle::Port *m_gridIn = nullptr, *m_dataIn = nullptr;
     vistle::Port *m_gridOut = nullptr, *m_dataOut = nullptr;

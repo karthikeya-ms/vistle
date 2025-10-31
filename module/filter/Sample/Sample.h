@@ -14,13 +14,11 @@ namespace mpi = boost::mpi;
 class Sample: public vistle::Module {
 public:
     Sample(const std::string &name, int moduleID, mpi::communicator comm);
-    ~Sample();
 
 private:
-    //virtual bool compute() override;
-    virtual bool compute(const std::shared_ptr<vistle::BlockTask> &task) const override;
+    bool compute(const std::shared_ptr<vistle::BlockTask> &task) const override;
 
-    virtual bool reduce(int timestep) override;
+    bool reduce(int timestep) override;
     bool objectAdded(int sender, const std::string &senderPort, const vistle::Port *port) override;
     bool changeParameter(const vistle::Parameter *p) override;
 

@@ -25,11 +25,10 @@
 class ToUnstructured: public vistle::Module {
 public:
     ToUnstructured(const std::string &name, int moduleID, mpi::communicator comm);
-    ~ToUnstructured();
 
 private:
     // overridden functions
-    virtual bool compute() override;
+    bool compute() override;
 
     // private helper functions
     void compute_uniformVecs(vistle::UniformGrid::const_ptr obj, vistle::UnstructuredGrid::ptr unstrGridOut,

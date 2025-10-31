@@ -24,7 +24,6 @@ static const int NumDim = 4;
 class ObjectStatistics: public vistle::Module {
 public:
     ObjectStatistics(const std::string &name, int moduleID, mpi::communicator comm);
-    ~ObjectStatistics();
 
     struct stats {
         Index blocks; //!< no. of blocks/partitions
@@ -97,10 +96,10 @@ public:
 private:
     static const int MaxDim = ParamVector::MaxDimension;
 
-    virtual bool compute();
-    virtual bool reduce(int timestep);
+    bool compute() override;
+    bool reduce(int timestep) override;
 
-    bool prepare();
+    bool prepare() override;
 
     int m_timesteps; //!< no. of time steps
     std::map<int, int> m_objectsInTimestep;
@@ -162,9 +161,6 @@ ObjectStatistics::ObjectStatistics(const std::string &name, int moduleID, mpi::c
                         vistle::Parameter::Boolean);
     createInputPort("data_in", "input data", Port::MULTI);
 }
-
-ObjectStatistics::~ObjectStatistics()
-{}
 
 bool ObjectStatistics::compute()
 {
