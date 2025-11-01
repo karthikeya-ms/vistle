@@ -395,6 +395,8 @@ class PythonStateObserver(_vistle.StateObserver):
         super(PythonStateObserver, self).info(text, textType, senderId, senderRank, refType, refUuid)
     def status(self, moduleId, text, prio):
         super(PythonStateObserver, self).status(moduleId, text, prio)
+    def itemInfo(self, text, type, senderId, port):
+        super(PythonStateObserver, self).itemInfo(text, type, senderId, port)
     def updateStatus(self, moduleId, text, prio):
         super(PythonStateObserver, self).updateStatus(moduleId, text, prio)
     def setName(self, moduleId, name):
@@ -459,6 +461,7 @@ getInputPorts = _vistle.getInputPorts
 getOutputPorts = _vistle.getOutputPorts
 getConnections = _vistle.getConnections
 getParameters = _vistle.getParameters
+getParameterGroup = _vistle.getParameterGroup
 getParameterType = _vistle.getParameterType
 getParameterPresentation = _vistle.getParameterPresentation
 getParameterTooltip = _vistle.getParameterTooltip

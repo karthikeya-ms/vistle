@@ -63,8 +63,8 @@ bool PythonInterpreter::executeCommand(const std::string &cmd)
 PythonInterpreter::~PythonInterpreter()
 {
     m_py_release.reset();
-    m_module.reset();
     m_interpreter.reset();
+    m_module.reset();
 }
 
 bool PythonInterpreter::error() const
@@ -74,8 +74,9 @@ bool PythonInterpreter::error() const
 
 bool PythonInterpreter::quitting() const
 {
+    pybind11::gil_scoped_release release;
     std::lock_guard stateLocker(*m_access);
-    return m_access->state().quitting();
+    return m_access->state().quitting() || m_access->state().cancelling();
 }
 
 PythonExecutor::PythonExecutor(PythonInterpreter &inter, const std::string &command)

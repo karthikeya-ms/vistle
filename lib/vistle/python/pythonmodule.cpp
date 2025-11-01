@@ -31,7 +31,7 @@
 #endif
 
 //#define DEBUG
-#define OBSERVER_DEBUG
+//#define OBSERVER_DEBUG
 
 #include <vistle/core/statetracker.h>
 #include <vistle/core/porttracker.h>
@@ -102,6 +102,7 @@ static bool sendMessage(vistle::message::Message &m, Payload &payload)
 
 static bool sendCoverMessage(int destMod, int subType, size_t len, const char *data)
 {
+    py::gil_scoped_release release;
     vistle::buffer pl(data, data + len);
     message::Cover cover(subType);
     cover.setDestId(destMod);
@@ -139,12 +140,12 @@ static bool sendCoverGuiMessage(const char *msg, int moduleId)
 
 static std::shared_ptr<message::Buffer> waitForReply(const message::uuid_t &uuid)
 {
-    py::gil_scoped_release release;
     return state().waitForReply(uuid);
 }
 
 static std::string vistle_version()
 {
+    py::gil_scoped_release release;
     return vistle::version::string();
 }
 
@@ -181,6 +182,7 @@ static bool source(const std::string &filename)
 
 static void quit()
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: quit" << std::endl;
 #endif
@@ -191,6 +193,7 @@ static void quit()
 
 static void trace(int id = message::Id::Broadcast, message::Type type = message::ANY, bool onoff = true)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     auto cerrflags = std::cerr.flags();
     std::cerr << "Python: trace " << id << ", type " << type << ": " << std::boolalpha << onoff << std::endl;
@@ -210,6 +213,7 @@ static void trace(int id = message::Id::Broadcast, message::Type type = message:
 
 static void debug(int id = message::Id::Invalid)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: debug " << id << std::endl;
 #endif
@@ -220,6 +224,7 @@ static void debug(int id = message::Id::Invalid)
 
 static bool barrier(const std::string &info)
 {
+    py::gil_scoped_release release;
     message::Barrier m(info);
     m.setDestId(message::Id::MasterHub);
     state().registerRequest(m.uuid());
@@ -234,6 +239,7 @@ static bool barrier(const std::string &info)
 
 static void removeHub(int hub)
 {
+    py::gil_scoped_release release;
     if (message::Id::isHub(hub)) {
         message::Quit m(hub);
         m.setDestId(hub);
@@ -243,6 +249,7 @@ static void removeHub(int hub)
 
 static std::string spawnAsync(int hub, const char *module, int numSpawn = -1, int baseRank = -1, int rankSkip = -1)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: spawnAsync " << module << std::endl;
 #endif
@@ -264,6 +271,7 @@ static std::string spawnAsyncSimple(const char *module, int numSpawn = -1, int b
 
 static std::string migrateAsync(int migrateId, int toHub = message::Id::Invalid, std::string name = std::string())
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: migrateAsync " << name << ":" << migrateId << " to hub " << toHub << std::endl;
 #endif
@@ -287,6 +295,7 @@ static std::string migrateAsync(int migrateId, int toHub = message::Id::Invalid,
 
 static int waitForSpawn(const std::string &uuid)
 {
+    py::gil_scoped_release release;
     boost::uuids::string_generator gen;
     message::uuid_t u = gen(uuid);
     auto buf = waitForReply(u);
@@ -343,6 +352,7 @@ static int replace(int migrateId, std::string name)
 
 static void kill(int id)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: kill " << id << std::endl;
 #endif
@@ -355,6 +365,7 @@ static void kill(int id)
 
 static void setModuleDisplayName(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: setModuleDisplayName of " << id << " to " << name << std::endl;
 #endif
@@ -367,6 +378,7 @@ static void setModuleDisplayName(int id, const std::string &name)
 
 static std::string getModuleDisplayName(int id)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: getModuleDisplayName of " << id << std::endl;
 #endif
@@ -378,11 +390,13 @@ static std::string getModuleDisplayName(int id)
 
 static std::string hubName(int id)
 {
+    py::gil_scoped_release release;
     return state().hubName(id);
 }
 
 static int waitForAnySlaveHub()
 {
+    py::gil_scoped_release release;
     auto hubs = state().getSlaveHubs();
     if (!hubs.empty())
         return hubs[0];
@@ -396,12 +410,14 @@ static int waitForAnySlaveHub()
 
 static std::vector<int> waitForSlaveHubs(int count)
 {
+    py::gil_scoped_release release;
     auto hubs = state().waitForSlaveHubs(count);
     return hubs;
 }
 
 static int waitForNamedHub(const std::string &name)
 {
+    py::gil_scoped_release release;
     std::vector<std::string> names;
     names.push_back(name);
     const auto ids = state().waitForSlaveHubs(names);
@@ -416,17 +432,20 @@ static int waitForNamedHub(const std::string &name)
 
 static std::vector<int> waitForNamedHubs(const std::vector<std::string> &names)
 {
+    py::gil_scoped_release release;
     return state().waitForSlaveHubs(names);
 }
 
 static int getHub(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().getHub(id);
 }
 
 static int getMasterHub()
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().getMasterHub();
 }
@@ -443,12 +462,14 @@ static int getWorkflowConfig()
 
 static std::vector<int> getAllHubs()
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().getSlaveHubs();
 }
 
 static std::vector<int> getRunning()
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
 #ifdef DEBUG
     std::cerr << "Python: getRunning " << std::endl;
@@ -458,6 +479,7 @@ static std::vector<int> getRunning()
 
 static std::vector<std::string> getAvailable()
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     const auto &avail = state().availableModules();
     std::vector<std::string> ret;
@@ -470,6 +492,7 @@ static std::vector<std::string> getAvailable()
 
 static std::vector<int> getBusy()
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
 #ifdef DEBUG
     std::cerr << "Python: getBusy " << std::endl;
@@ -479,18 +502,21 @@ static std::vector<int> getBusy()
 
 static std::vector<std::string> getInputPorts(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().portTracker()->getInputPortNames(id);
 }
 
 static std::vector<std::string> getOutputPorts(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().portTracker()->getOutputPortNames(id);
 }
 
 static std::string getPortDescription(int id, const std::string &portname)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().portTracker()->getPortDescription(id, portname);
 }
@@ -498,6 +524,7 @@ static std::string getPortDescription(int id, const std::string &portname)
 
 static std::vector<std::pair<int, std::string>> getConnections(int id, const std::string &port)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     std::vector<std::pair<int, std::string>> result;
 
@@ -512,12 +539,30 @@ static std::vector<std::pair<int, std::string>> getConnections(int id, const std
 
 static std::vector<std::string> getParameters(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     return state().getParameters(id);
 }
 
+static std::string getParameterGroup(int id, const std::string &name)
+{
+    py::gil_scoped_release release;
+    std::unique_lock<PythonStateAccessor> guard(access());
+    const auto param = state().getParameter(id, name);
+    if (!param) {
+        std::cerr << "Python: getParameterGroup: no such parameter" << std::endl;
+        return "";
+    }
+    auto group = param->group();
+    if (group.empty() && !name.empty() && name[0] == '_') {
+        return "System";
+    }
+    return group;
+}
+
 static std::string getParameterType(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     const auto param = state().getParameter(id, name);
     if (!param) {
@@ -537,6 +582,7 @@ static std::string getParameterType(int id, const std::string &name)
 
 static std::string getParameterPresentation(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     const auto param = state().getParameter(id, name);
     if (!param) {
@@ -549,6 +595,7 @@ static std::string getParameterPresentation(int id, const std::string &name)
 
 static bool isParameterDefault(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     const auto param = state().getParameter(id, name);
     if (!param) {
@@ -562,6 +609,7 @@ static bool isParameterDefault(int id, const std::string &name)
 template<typename T>
 static T getParameterValue(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     const auto param = state().getParameter(id, name);
     if (!param) {
@@ -600,6 +648,7 @@ static std::string getParameterTooltip(int id, const std::string &name)
 
 static std::vector<std::string> getParameterChoices(int id, const std::string &name)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
     std::vector<std::string> choices;
     const auto param = state().getParameter(id, name);
@@ -674,6 +723,7 @@ static std::string getEscapedStringParam(int id, const std::string &name)
 
 static std::string getModuleName(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
 #ifdef DEBUG
     std::cerr << "Python: getModuleName(" << id << ")" << std::endl;
@@ -683,6 +733,7 @@ static std::string getModuleName(int id)
 
 static int findFirstModule(const std::string &moduleName)
 {
+    py::gil_scoped_release release;
     for (auto mod: state().getRunningList())
         if (getModuleName(mod) == moduleName)
             return mod;
@@ -691,6 +742,7 @@ static int findFirstModule(const std::string &moduleName)
 
 static std::string getModuleDescription(int id)
 {
+    py::gil_scoped_release release;
     std::unique_lock<PythonStateAccessor> guard(access());
 #ifdef DEBUG
     std::cerr << "Python: getModuleDescription(" << id << ")" << std::endl;
@@ -700,6 +752,7 @@ static std::string getModuleDescription(int id)
 
 static void connect(int sid, const char *sport, int did, const char *dport)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: connect " << sid << ":" << sport << " -> " << did << ":" << dport << std::endl;
 #endif
@@ -710,6 +763,7 @@ static void connect(int sid, const char *sport, int did, const char *dport)
 
 static void disconnect(int sid, const char *sport, int did, const char *dport)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: disconnect " << sid << ":" << sport << " -> " << did << ":" << dport << std::endl;
 #endif
@@ -720,6 +774,7 @@ static void disconnect(int sid, const char *sport, int did, const char *dport)
 
 static void sendSetParameter(message::SetParameter &msg, int id, bool delayed)
 {
+    py::gil_scoped_release release;
     msg.setDestId(id);
     if (delayed)
         msg.setDelayed();
@@ -825,6 +880,7 @@ static void compute(int id = message::Id::Broadcast)
 
 static void cancelCompute(int id)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: cancelCompute " << id << std::endl;
 #endif
@@ -835,6 +891,7 @@ static void cancelCompute(int id)
 
 static void requestTunnel(unsigned short listenPort, const std::string &destHost, unsigned short destPort = 0)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: requestTunnel " << listenPort << " -> " << destHost << ":" << destPort << std::endl;
 #endif
@@ -865,6 +922,7 @@ static void requestTunnel(unsigned short listenPort, const std::string &destHost
 
 static void removeTunnel(unsigned short listenPort)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: removeTunnel " << listenPort << std::endl;
 #endif
@@ -875,6 +933,7 @@ static void removeTunnel(unsigned short listenPort)
 
 static void printInfo(const std::string &message)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: printInfo " << message << std::endl;
 #endif
@@ -886,6 +945,7 @@ static void printInfo(const std::string &message)
 
 static void printWarning(const std::string &message)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: printWarning " << message << std::endl;
 #endif
@@ -897,6 +957,7 @@ static void printWarning(const std::string &message)
 
 static void printError(const std::string &message)
 {
+    py::gil_scoped_release release;
 #ifdef DEBUG
     std::cerr << "Python: printError " << message << std::endl;
 #endif
@@ -908,6 +969,7 @@ static void printError(const std::string &message)
 
 static void setStatus(const std::string &text, message::UpdateStatus::Importance prio)
 {
+    py::gil_scoped_release release;
     message::UpdateStatus m(text, prio);
     sendMessage(m);
 }
@@ -919,17 +981,20 @@ static void clearStatus()
 
 static void setLoadedFile(const std::string &file)
 {
+    py::gil_scoped_release release;
     message::UpdateStatus m(message::UpdateStatus::LoadedFile, file);
     sendMessage(m);
 }
 
 static std::string getLoadedFile()
 {
+    py::gil_scoped_release release;
     return state().loadedWorkflowFile();
 }
 
 static std::string getSessionUrl()
 {
+    py::gil_scoped_release release;
     return state().sessionUrl();
 }
 //contains allocated compounds
@@ -1056,6 +1121,7 @@ void moduleCompoundToFile(const ModuleCompound &comp)
 
 static void moduleCompoundCreate(int compoundId)
 {
+    py::gil_scoped_release release;
     auto mc = findCompound(compoundId);
     if (mc == compounds.end()) {
         printError("Failed to create module compound: invalid id " + std::to_string(compoundId));
@@ -1073,7 +1139,23 @@ public:
 #ifdef OBSERVER_DEBUG
     : m_out(std::cerr)
 #endif
-    {}
+    {
+        state().registerObserver(this);
+#ifdef OBSERVER_DEBUG
+        m_out << "TrivialStateObserver created" << std::endl;
+#endif
+    }
+
+    ~TrivialStateObserver()
+    {
+        if (pythonModuleInstance) {
+            pythonModuleInstance->access()->state().unregisterObserver(this);
+            //state().unregisterObserver(this);
+        }
+#ifdef OBSERVER_DEBUG
+        m_out << "TrivialStateObserver destroyed" << std::endl;
+#endif
+    }
 
     void newHub(int hubId, const message::AddHub &hub) override
     {
@@ -1215,6 +1297,15 @@ public:
 #endif
     }
 
+    void itemInfo(const std::string &text, message::ItemInfo::InfoType type, int senderId,
+                  const std::string &port) override
+    {
+#ifdef OBSERVER_DEBUG
+        std::cerr << "Item info: " << senderId << ": " << text << ", type=" << type << ", port=" << port
+                  << ", sender=" << senderId << std::endl;
+#endif
+    }
+
 #ifdef OBSERVER_DEBUG
 private:
     std::ostream &m_out;
@@ -1307,6 +1398,12 @@ public:
     void updateStatus(int id, const std::string &text, message::UpdateStatus::Importance prio) override
     {
         PYBIND11_OVERRIDE(void, Base, updateStatus, id, text, prio);
+    }
+
+    void itemInfo(const std::string &text, message::ItemInfo::InfoType type, int senderId,
+                  const std::string &port) override
+    {
+        PYBIND11_OVERRIDE(void, Base, itemInfo, text, type, senderId, port);
     }
 };
 
@@ -1423,6 +1520,10 @@ PY_MODULE(_vistle, m)
     py::class_<message::SendText> st(m, "Text");
     vistle::message::SendText::enumForPython_TextType(st, "Type");
 
+    // make values of vistle::message::ItemInfo::InfoType enum known to Python as Item.xxx
+    py::class_<message::ItemInfo> ii(m, "Item");
+    vistle::message::ItemInfo::enumForPython_InfoType(ii, "Type");
+
     py::class_<message::Id> id(m, "Id");
     py::enum_<message::Id::Reserved>(id, "Id")
         .value("Invalid", message::Id::Invalid)
@@ -1451,6 +1552,7 @@ PY_MODULE(_vistle, m)
         .def("deleteConnection", &SO::deleteConnection)
         .def("info", &SO::info)
         .def("status", &SO::status)
+        .def("itemInfo", &SO::itemInfo)
         .def("updateStatus", &SO::updateStatus);
 
     typedef vistle::TrivialStateObserver TSO;
@@ -1472,6 +1574,7 @@ PY_MODULE(_vistle, m)
         .def("deleteConnection", &TSO::deleteConnection)
         .def("info", &TSO::info)
         .def("status", &TSO::status)
+        .def("itemInfo", &TSO::itemInfo)
         .def("updateStatus", &TSO::updateStatus);
 
     m.def("version", &vistle_version, "version of Vistle");
@@ -1591,6 +1694,7 @@ PY_MODULE(_vistle, m)
     m.def("getHub", getHub, "get ID of hub for module with ID `arg1`");
     m.def("getConnections", getConnections, "get connections to/from port `arg2` of module with ID `arg1`");
     m.def("getParameters", getParameters, "get list of parameters for module with ID `arg1`");
+    m.def("getParameterGroup", getParameterGroup, "get group of parameter named `arg2` of module with ID `arg1`");
     m.def("getParameterType", getParameterType, "get type of parameter named `arg2` of module with ID `arg1`");
     m.def("getParameterPresentation", getParameterPresentation,
           "get presentation of parameter named `arg2` of module with ID `arg1`");
@@ -1633,6 +1737,9 @@ PythonModule::PythonModule(PythonStateAccessor &stateAccessor): m_access(&stateA
 PythonModule::~PythonModule()
 {
     pythonModuleInstance = nullptr;
+#ifdef DEBUG
+    std::cerr << "Vistle python module destroyed" << std::endl;
+#endif
 }
 
 PythonStateAccessor *PythonModule::access()

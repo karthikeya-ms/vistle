@@ -23,6 +23,7 @@ class Access;
 }
 
 class PythonInterpreter;
+class PythonExecutor;
 class Directory;
 class Hub;
 
@@ -131,7 +132,7 @@ private:
     bool startServer();
     bool startManager(bool inCover, const std::string &libsimArg);
     bool startAccept(std::shared_ptr<acceptor> a);
-    void handleWrite(socket_ptr sock);
+    bool handleWrite(socket_ptr sock);
     void handleAccept(std::shared_ptr<acceptor> a, socket_ptr sock, const boost::system::error_code &error);
     void addSocket(socket_ptr sock, message::Identify::Identity ident = message::Identify::UNKNOWN);
     bool removeSocket(socket_ptr sock, bool close = true);
@@ -144,6 +145,7 @@ private:
     bool processScript(const std::string &filename, bool barrierAfterLoad, bool executeModules);
     bool processStartupScripts();
     bool processCommand(const std::string &filename);
+    bool invokePython(PythonExecutor &exec, const std::string &arg, bool isFile = true);
 
     bool isCachable(int oldModuleId, int newModuleId);
     void cachePortConnections(int oldModuleId, int newModuleId);
@@ -196,6 +198,7 @@ private:
     std::shared_ptr<process::child> m_vrb;
     std::chrono::steady_clock::time_point m_lastVrbStart;
     int m_vrbStartWait = 1;
+    int m_nestingLevel = 0;
 
     std::string m_logfileFormat;
 
